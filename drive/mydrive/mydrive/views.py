@@ -37,20 +37,18 @@ def manage_files(request):
             return redirect('manage_files')
     else:
         form = FileUploadForm()
-
-    # Get user's files
-    user_files = UserFile.objects.filter(owner=request.user)
     
-    # Bundle each file with its version history
-    files_with_versions = []
-    for f in user_files:
-        versions = get_s3_file_versions(f.file.name)
-        files_with_versions.append({
-            'obj': f,
-            'versions': versions
-        })
-
+    # Fetch all files for the user
+    all_files = UserFile.objects.filter(owner=request.user)
+    
+    # Dictionary to store only unique file names
+    unique_files = {}
+    for f in all_files:
+        if f.file.name not in unique_files:
+            unique_files[f.file.name] = f
+            
+    # Pass only the unique files to the template
     return render(request, 'file_manager.html', {
         'form': form, 
-        'files_with_versions': files_with_versions
+        'files': unique_files.values()
     })
