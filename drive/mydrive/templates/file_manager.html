@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloud Vault - Manager</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Secure Cloud Vault</h2>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Upload File</button>
+        </form>
+
+        <hr>
+
+        <h3>Stored Files & Version History</h3>
+        <table>
+            <tr>
+                <th>File Name</th>
+                <th>Download Latest</th>
+                <th>Version History</th>
+            </tr>
+            {% for item in files_with_versions %}
+            <tr>
+                <td>{{ item.obj.file.name }}</td>
+                <td><a href="{{ item.obj.file.url }}" target="_blank">Download</a></td>
+                <td>
+                    <ul style="list-style-type: none; padding: 0; margin: 0;">
+                    {% for v in item.versions %}
+                        <li style="font-size: 0.9em; color: #555;">
+                            V{{ forloop.counter }}: {{ v.VersionId|slice:":8" }}... 
+                            {% if v.IsLatest %}<strong>(Latest)</strong>{% endif %}
+                        </li>
+                    {% empty %}
+                        <li>No version history found.</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No files uploaded yet.</td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <form action="{% url 'logout' %}" method="post" style="margin-top: 20px;">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #e74c3c;">Logout</button>
+        </form>
+    </div>
+</body>
+</html>
